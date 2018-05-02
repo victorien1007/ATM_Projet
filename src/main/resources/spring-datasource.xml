@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+	<!-- 配置数据源 -->
+		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+			<property name="username" value="${mysql.jdbc.user}"></property>
+			<property name="password" value="${mysql.jdbc.password}"></property>
+			<property name="driverClassName" value="${mysql.jdbc.driverClass}"></property>
+			<property name="url" value="${mysql.jdbc.jdbcUrl}"></property>
+			<property name="initialSize" value="1"/>
+        	<property name="minIdle" value="1"/>
+        	<property name="maxActive" value="20"/>
+<!--         	配置获取连接等待超时的时间 -->
+        	<property name="maxWait" value="60000"/>
+<!--         	配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        	<property name="timeBetweenEvictionRunsMillis" value="60000"/>
+<!--         	配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        	<property name="minEvictableIdleTimeMillis" value="300000"/>
+<!--         	校验语句 -->
+        	<property name="validationQuery" value="SELECT 1"/>
+        	<property name="testWhileIdle" value="true"/>
+        	<property name="testOnBorrow" value="false"/>
+        	<property name="testOnReturn" value="false"/>
+<!--         	配置监控统计拦截的filters -->
+        	<property name="filters" value="stat"/>
+	</bean>
+	<!-- 配置数据源 -->
+	
+	<!-- 配置Jdbc模板 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    
+    <!-- B:配置Hibernate的SessionFactory实例 :通过spring提供的LocalSessionFactoryBean进行配置org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean-->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+        
+			<!-- 配置数据源属性 -->
+			<property name="dataSource" ref="dataSource"></property>
+			<!-- 配置hibernate配置文件的位置及名称 -->
+			<property name="configLocation" value="classpath:hibernate.cfg.xml"></property>
+			<!-- 配置hibernate映射文件的位置及名称，可以使用通配符,有两种方式 -->
+			<!-- 方法1 
+			<property name="mappingLocations" value="classpath:com/aimeng/security/domain/*.hbm.xml"></property>
+			-->
+			<!-- 方法2 -->
+			<property name="packagesToScan">
+				<array>
+					<value>com.atm.entity</value>
+				</array>
+			</property>
+	</bean>
+	<!-- E:配置Hibernate的SessionFactory实例 :通过spring提供的LocalSessionFactoryBean进行配置-->
+
+    <!-- 启动注解事务 -->
+<!--     <tx:annotation-driven transaction-manager="transactionManager"/> -->
+    
+    <!-- B:配置spring事物式声明 -->
+	<!-- 1、配置事物管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+			<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+
+
+
+	<!-- 2、启用事物注解 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	<!-- D:配置spring事物式声明 -->
+	<!-- 启用注解 -->
+	<context:annotation-config />
+	 
+</beans>
